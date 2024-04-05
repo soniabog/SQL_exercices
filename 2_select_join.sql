@@ -1,20 +1,20 @@
 /*
-Bazy Danych - Zarządzanie Zasobami Ludzkimi - część 2
+Database Management - Human Resources Management - Part 2
 
-Opis:
-Analiza Pensji i Lokalizacji w Bazie Danych Pracowników. Celem jest przedstawienie analizy wysokości 
-pensji w kontekście firm i lokalizacji pracowników.
+Description:
+Analysis of Salaries and Locations in the Employee Database. The goal is to present an analysis of 
+salary levels in the context of companies and employee locations.
 
-Autor: Sonia Bogdańska
+Author: Sonia Bogdańska
 */
 
--- Zadanie Z2.1: Znalezienie i prezentacja najwyższej pensji w wybranej firmie
+-- Task Z2.1: Finding and presenting the highest salary in a selected company
 
--- Ustalenie najwyższej pensji w firmie 'EP'
+-- Determining the highest salary in 'EP' company
 DECLARE @p money
 SELECT @p = (SELECT MAX(e.pensja) FROM ETATY e WHERE id_firmy='EP')
 
--- Prezentacja pracownika z najwyższą pensją w firmie 'EP'
+-- Presenting the employee with the highest salary in 'EP' company
 SELECT 
     LEFT(o.imie, 10) AS 'Imię',
     LEFT(o.nazwisko, 15) AS 'Nazwisko',
@@ -25,7 +25,7 @@ JOIN OSOBY o ON o.id_osoby = e.id_osoby
 JOIN FIRMY f ON f.nazwa_skr = e.id_firmy
 WHERE e.pensja = @p
 
--- Wynik pokazuje osobę o najwyższej pensji w firmie 'EP' (ENEA Poznań)
+-- The result shows the person with the highest salary in 'EP' company (ENEA Poznań)
 /*
 Wyniki:
 Imię       Nazwisko        Pensja                Nazwa Firmy
@@ -34,9 +34,9 @@ Piotr      Tętnica         30000.00              ENEA Poznań
 (1 row(s) affected)
 */
 
--- Zadanie Z2.2: Prezentacja danych etatów, osób i firm z określonymi warunkami lokalizacji
+-- Task Z2.2: Presenting position, personal, and company data with specific location conditions
 
--- Prezentacja szczegółów etatów i danych osobowych pracowników, z uwzględnieniem firm i lokalizacji
+-- Presenting details of positions and personal information of employees, considering companies and locations
 SELECT 
     LEFT(e.pensja, 10) AS 'Pensja',
     LEFT(e.stanowisko, 15) AS 'Stanowisko',
@@ -54,7 +54,7 @@ JOIN MIASTA mf ON f.id_miasta = mf.id_miasta
 JOIN MIASTA mo ON o.id_miasta = mo.id_miasta
 WHERE LEFT(mo.kod_woj,1) = 'W' AND LEFT(mf.kod_woj,1) = 'M'
 
--- Wynik prezentuje dane etatów i osobowe pracowników spełniających kryteria lokalizacji
+-- The result presents the data of positions and personal information of employees meeting the location criteria
 
 /*
 Wyniki:

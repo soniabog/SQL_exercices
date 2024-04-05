@@ -1,21 +1,21 @@
 /*
-Bazy Danych - Zarządzanie Zasobami Ludzkimi - część 5
+Database Management - Human Resources Management - Part 5
 
-Opis:
-Część ta koncentruje się na przypisywaniu etatów do wybranych 
-pracowników oraz analizie zatrudnienia w kontekście specyficznych 
-firm.
+Description:
+This part focuses on assigning positions to selected 
+employees and analyzing employment in the context of 
+specific companies.
 
-Autor: Sonia Bogdańska
+Author: Sonia Bogdańska
 */
 
---Z5.1: Przypisywanie etatów i analiza zatrudnienia w kontekście firm
+--Z5.1: Assigning positions and analyzing employment in the context of companies
 
--- Przygotowanie tabeli tymczasowej do analizy
+-- Preparing a temporary table for analysis
 CREATE TABLE #n (nazwa_f nvarchar(100) not null constraint PK_n_f PRIMARY KEY)
 INSERT INTO #n(nazwa_f) VALUES ('Cyfrowy Polsat'), ('Kompania Piwowarska'), ('Idea Bank')
 
--- Wyszukiwanie osób pracujących we wszystkich firmach z tabeli #n
+-- Searching for people working in all companies listed in table #n
 SELECT o.imie, o.nazwisko
 FROM osoby o
 JOIN etaty e ON o.id_osoby = e.id_osoby
@@ -32,12 +32,12 @@ Adam                                     Nowak
 (1 row affected)
 */
 
---Z5.2: Aktualizacja liczby aktualnych etatów dla każdej osoby
+--Z5.2: Updating the number of current positions for each person
 
--- Dodanie kolumny do tabeli OSOBY
+-- Adding a column to the PERSONS table
 ALTER TABLE osoby ADD ILE_AKT_ET int NOT NULL DEFAULT 0
 
--- Aktualizacja liczby etatów dla każdej osoby
+-- Updating the number of positions for each person
 UPDATE osoby
 SET ILE_AKT_ET = (
 	SELECT COUNT(*) FROM etaty
@@ -48,7 +48,7 @@ WHERE EXISTS (
 SELECT 1 FROM etaty WHERE etaty.id_osoby = osoby.id_osoby
 );
 
--- Wyświetlenie zaktualizowanych danych
+-- Displaying the updated data
 SELECT imie, nazwisko, ILE_AKT_ET FROM osoby
 
 /*
@@ -70,5 +70,5 @@ Izabela                                  Łęcka                                
 (12 rows affected)
 */
 
--- Zakończenie i czyszczenie
+-- Cleanup
 DROP TABLE IF EXISTS #n

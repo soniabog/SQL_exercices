@@ -1,24 +1,24 @@
 /*
-Bazy Danych - Zarządzanie Zasobami Ludzkimi - część 3
+Database Management - Human Resources Management - Part 3
 
-Opis:
-Celem tej części jest przeprowadzenie szczegółowej analizy danych pracowniczych 
-w kontekście etatów, pensji oraz przynależności pracowników do poszczególnych firm. 
-Poszukiwane są dane dotyczące zatrudnienia w firmie, takie jak rozkład liczby etatów 
-przypadających na pracowników, analiza poziomów pensji oraz powiązanie pracowników z firmami 
-na podstawie lokalizacji.
+Description:
+The goal of this part is to conduct a detailed analysis of employee data 
+in the context of positions, salaries, and the affiliation of employees to specific companies. 
+Sought are data regarding employment in the company, such as the distribution of the number of positions 
+per employees, salary levels analysis, and linking employees with companies 
+based on location.
 
-Autor: Sonia Bogdańska
+Author: Sonia Bogdańska
 */
 
--- Z3.1.1: Analiza ilości etatów przypadających na poszczególnych pracowników
+-- Z3.1.1: Analysis of the number of positions per individual employees
 
 SELECT e.id_osoby, COUNT(*) AS ile_et
 FROM etaty e
 GROUP BY e.id_osoby
 ORDER BY ile_et DESC;
 
--- Wyniki pokazują liczbę etatów przypadających na każdego pracownika.
+-- The results show the number of positions held by each employee.
 
 /* id_osoby    ile_et
 ----------- -----------
@@ -35,7 +35,7 @@ ORDER BY ile_et DESC;
 (9 row(s) affected)
 */
 
--- Z3.1.2: Znalezienie i zapisanie w tabeli tymczasowej #ot danych dotyczących najniższych pensji
+-- Z3.1.2: Finding and storing data about the lowest salaries in the temporary table #ot
 
 IF OBJECT_ID(N'tempdb..#ot') IS NOT NULL
 	DROP TABLE #ot
@@ -57,7 +57,7 @@ WHERE e.pensja = (
 	WHERE e.id_osoby = o.id_osoby
 );
 
--- Tabela #ot zawiera teraz dane o najniższych pensjach dla każdej osoby.
+-- The #ot table now contains data about the lowest salaries for each person.
 
 /*
 id_osoby imie          nazwisko         pensja   nazwa_skr nazwa
@@ -76,13 +76,13 @@ id_osoby imie          nazwisko         pensja   nazwa_skr nazwa
 
 */
 
--- Z3.2: Wyszukanie najniższej pensji w bazie z tabeli #ot
+-- Z3.2: Finding the lowest salary in the database from table #ot
 
 SELECT * 
 FROM #ot
 WHERE pensja = (SELECT MIN(pensja) FROM #ot);
 
--- Wynik zwraca szczegóły dotyczące najniższej pensji w całej bazie danych.
+-- The result returns details about the lowest salary in the entire database.
 
 /*
 id_osoby imie          nazwisko         pensja                nazwa_skr nazwa
@@ -93,7 +93,7 @@ id_osoby imie          nazwisko         pensja                nazwa_skr nazwa
 
 */
 
--- Z3.3: Pokazanie firm, w których nie pracowała osoba o wybranym nazwisku (np. "Tętnica")
+-- Z3.3: Showing companies where an individual with a selected surname (e.g., "Tętnica") has not worked
 
 SELECT DISTINCT  LEFT(f.nazwa, 15) AS nazwa, f.nazwa_skr
 FROM FIRMY f
@@ -105,7 +105,7 @@ WHERE NOT EXISTS (
 	WHERE o.nazwisko = 'Tętnica' AND fw.nazwa_skr =f.nazwa_skr
 );
 
--- Wynikiem jest lista firm bez pracownika o nazwisku "Tętnica".
+-- The result is a list of companies without an employee with the surname "Tętnica".
 
 /*
 nazwa           nazwa_skr
@@ -117,7 +117,7 @@ Kompania Piwowa KP
 (3 row(s) affected)
 */
 
--- Z3.4: Wyszukanie firm, w których nie pracował nikt z Warszawy
+-- Z3.4: Finding companies where no one from Warsaw has worked
 SELECT DISTINCT f.nazwa_skr, LEFT(f.nazwa,15) AS nazwa, m.nazwa AS miasto_firmy, w.nazwa AS województwo_firmy
 FROM FIRMY f
 JOIN MIASTA m ON m.id_miasta = f.id_miasta
@@ -141,5 +141,5 @@ KP        Kompania Piwowa Pozna�                                   Wielkopolsk
 VP        Volskwagen      Pozna�                                   Wielkopolskie
 
 (5 row(s) affected)
--- w każdej firmie pracuje ktoś z Warszawy
+-- everyone has someone from Warsaw working
 */

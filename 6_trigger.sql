@@ -1,16 +1,16 @@
 /*
-Bazy Danych - Wypożyczalnia Aut
+Database Management - Car Rental
 
-Opis projektu:
-Część ta koncentruje się na implementacji i zarządzaniu tabelami oraz triggerami 
-związanymi z wypożyczalnią aut. Zadanie polega na stworzeniu struktury danych dla 
-aut, klientów, wypożyczeń oraz zwrotów, a następnie na zarządzaniu zmianami w dostępności 
-pojazdów za pomocą triggerów, które reagują na operacje INSERT, UPDATE oraz DELETE.
+Project Description:
+This part focuses on the implementation and management of tables and triggers
+related to car rentals. The task involves creating a data structure for
+cars, clients, rentals, and returns, and then managing changes in vehicle availability
+using triggers that respond to INSERT, UPDATE, and DELETE operations.
 
-Autor: Sonia Bogdańska
+Author: Sonia Bogdańska
 */
 
--- Usuwanie istniejących tabel (jeżeli istnieją)
+-- Removing existing tables (if they exist)
 IF OBJECT_ID('dbo.AUTA') IS NOT NULL 
 	DROP TABLE AUTA
 IF OBJECT_ID('dbo.ZWROT') IS NOT NULL
@@ -20,7 +20,7 @@ IF OBJECT_ID('dbo.WYPOZYCZ') IS NOT NULL
 IF OBJECT_ID('dbo.KLIENT') IS NOT NULL
 	DROP TABLE KLIENT
 
--- Tworzenie tabel AUTA, KLIENT, WYPORZYCZ, ZWROT
+-- Creating tables AUTA (CARS), KLIENT (CLIENT), WYPOZYCZ (RENTAL), ZWROT (RETURN)
 
 CREATE TABLE dbo.AUTA (
   id_a INT NOT NULL IDENTITY (1,1) PRIMARY KEY,
@@ -53,9 +53,9 @@ CREATE TABLE dbo.zwrot
 )
 GO
 
--- Tworzenie triggerów
+-- Creating triggers
 
--- Trigger na insert do AUTA (przypisanie liczby zakupionych aut do liczby dostępnych)
+-- Trigger on insert into CARS (assigning the number of purchased cars to available cars)
 CREATE TRIGGER dbo.AUTA_INSRT_ZAKUP ON dbo.AUTA FOR INSERT
 AS
 	UPDATE AUTA
@@ -65,7 +65,7 @@ AS
 		JOIN inserted i ON AUTA.id_a = i.id_a
 GO
 
--- Trigger na update dla AUTA (aktualizacja liczby dostępnych aut)
+-- Trigger on update for CARS (updating the available car count)
 CREATE TRIGGER dbo.AUTA_UPD_ZAKUP ON dbo.AUTA FOR UPDATE
 AS
 	IF UPDATE(liczba_zakupionych) 
@@ -77,8 +77,8 @@ AS
 			JOIN deleted d ON a.id_a=d.id_a
 GO
 
--- Trigger do kontroli poprawności aktualizacji liczby dostępnych aut w tabeli AUTA
--- Zapobiega sytuacjom, w których liczba dostępnych aut przekracza liczbę zakupionych lub jest mniejsza od zera
+-- Trigger to control the correctness of updating the available car count in the CARS table
+-- Prevents situations where the available car count exceeds the purchased count or is less than zero
 CREATE TRIGGER dbo.AUTA_update_dost ON dbo.AUTA FOR UPDATE
 AS
 	IF UPDATE(liczba_dostepnych)
@@ -89,13 +89,13 @@ AS
 		END
 GO
 
--- Trigger na operacje INSERT, UPDATE, DELETE w tabeli WYPOZYCZ
--- Automatycznie aktualizuje liczbę dostępnych aut w tabeli AUTA na podstawie wypożyczeń i zwrotów
+-- Trigger for INSERT, UPDATE, DELETE operations on the RENTAL table
+-- Automatically updates the available car count in the CARS table based on rentals and returns
 CREATE TRIGGER dbo.WYPOZYCZ_ALL ON WYPOZYCZ
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
-    -- Zmniejszenie liczby dostępnych aut przy wypożyczeniu
+    -- Decrease available car count on rental
     UPDATE auta
     SET liczba_dostepnych = liczba_dostepnych - X.suma
     FROM auta a
@@ -105,7 +105,7 @@ BEGIN
         GROUP BY id_a
     ) X ON X.id_a = a.id_a;
 
-	-- Zwiększenie liczby dostępnych aut przy usunięciu wypożyczenia
+	-- Increase available car count on rental deletion
     UPDATE auta
     SET liczba_dostepnych = liczba_dostepnych + X.suma
     FROM auta a
@@ -117,14 +117,14 @@ BEGIN
 END;
 GO
 
--- Trigger na operacje INSERT, UPDATE, DELETE w tabeli ZWROT
--- Aktualizuje liczbę dostępnych aut w AUTA, odzwierciedlając zwroty wypożyczonych aut
+-- Trigger for INSERT, UPDATE, DELETE operations on the RETURN table
+-- Updates the available car count in CARS, reflecting the return of rented cars
 CREATE TRIGGER dbo.ZWROT_ALL ON ZWROT
 CREATE TRIGGER dbo.ZWROT_ALL ON ZWROT
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
-    -- Zwiększenie liczby dostępnych aut przy zwrocie
+    -- Increase available car count on return
     UPDATE auta
     SET liczba_dostepnych = liczba_dostepnych + X.suma
     FROM auta a
@@ -134,7 +134,7 @@ BEGIN
         GROUP BY id_a
     ) X ON X.id_a = a.id_a;
 
-    -- Zmniejszenie liczby dostępnych aut przy usunięciu zwrotu
+    -- Decrease available car count on return deletion
     UPDATE auta
     SET liczba_dostepnych = liczba_dostepnych - X.suma
     FROM auta a
@@ -146,8 +146,8 @@ BEGIN
 END;
 GO
 
--- Zaktualizowany trigger na INSERT dla AUTA
--- Przypisuje liczbę zakupionych aut do liczby dostępnych aut przy każdym dodaniu nowego auta
+-- Updated trigger for INSERT on CARS
+-- Assigns the number of purchased cars to the number of available cars with each new car addition
 ALTER TRIGGER dbo.AUTA_INSRT_ZAKUP ON dbo.AUTA FOR INSERT
 AS
 	UPDATE AUTA
@@ -157,8 +157,8 @@ AS
 		JOIN inserted i ON (a.id_a = i.id_a)
 GO
 
--- Zaktualizowany trigger na UPDATE dla AUTA
--- Aktualizuje liczbę dostępnych aut tylko w przypadku zmiany liczby zakupionych aut
+-- Updated trigger for UPDATE on CARS
+-- Updates the number of available cars only in case of a change in the number of purchased cars
 ALTER TRIGGER dbo.AUTA_UPD_ZAKUP ON dbo.AUTA FOR UPDATE
 AS
 	IF UPDATE(liczba_zakupionych) 
@@ -171,7 +171,7 @@ AS
 			WHERE NOT (i.liczba_zakupionych=d.liczba_zakupionych)
 GO
 
--- Aktualizuje trigger na aktualizację tabeli AUTA, monitorujący pole liczba_dostepnych
+-- Updates the trigger for updating the CARS table, monitoring the available_count field
 ALTER TRIGGER dbo.AUTA_update_dost ON dbo.AUTA FOR UPDATE
 AS
 	IF UPDATE(liczba_dostepnych)
@@ -183,7 +183,7 @@ AS
 GO
 
 
--- Wstawianie danych testowych i demonstracja działania triggerów
+-- Inserting test data and demonstrating trigger functionality
 
 INSERT INTO dbo.AUTA (model, liczba_dostepnych, liczba_zakupionych)
 VALUES ('Toyota Camry', 5, 7)
@@ -262,7 +262,7 @@ id_a        model                                                        liczba_
 9           Ford Mustang                                                 8                 8
 */
 
-/*więcej aut dostępnych niż kupionych*/
+/*more cars available than bought*/
 INSERT INTO zwrot(id_a, id_klienta, liczba) VALUES (7,1,2), (7,2,3)
 SELECT * FROM AUTA
 /* Msg 50000, Level 16, State 3, Procedure AUTA_update_dost, Line 6 [Batch Start Line 309]
@@ -271,7 +271,7 @@ Msg 3609, Level 16, State 1, Procedure ZWROT_ALL, Line 6 [Batch Start Line 309]
 The transaction ended in the trigger. The batch has been aborted.
 */
 
-/*ujemna liczba aut dostępnych*/
+/*negative number of available cars*/
 INSERT INTO wypozycz(id_a, id_klienta, liczba) VALUES (8,1,9), (8,2,4)
 SELECT * FROM AUTA
 

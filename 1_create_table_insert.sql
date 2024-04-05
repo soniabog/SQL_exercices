@@ -1,14 +1,14 @@
 /*
-Bazy Danych - Zarządzanie Zasobami Ludzkimi - część 1
+Database Management - Human Resources Management - Part 1
 
-Opis projektu:
-Celem części 1 jest zaprezentowanie struktury danych umożliwiającej efektywne zarządzanie informacjami o pracownikach, ich etatach oraz firmach, 
-w których są zatrudnieni, z uwzględnieniem lokalizacji geograficznej.
+Description:
+The aim of Part 1 is to present a data structure that enables efficient management of information about employees, their positions, and the companies 
+they are employed by, taking into account the geographical location.
 
-Autor: Sonia Bogdańska
+Author: Sonia Bogdańska
 */
 
--- Usuwanie istniejących tabel (jeżeli istnieją)
+-- Dropping existing tables (if any)
 IF OBJECT_ID('ETATY') IS NOT NULL DROP TABLE ETATY;
 IF OBJECT_ID('FIRMY') IS NOT NULL DROP TABLE FIRMY;
 IF OBJECT_ID('OSOBY') IS NOT NULL DROP TABLE OSOBY;
@@ -16,16 +16,16 @@ IF OBJECT_ID('MIASTA') IS NOT NULL DROP TABLE MIASTA;
 IF OBJECT_ID('WOJ') IS NOT NULL DROP TABLE WOJ;
 GO
 
--- Tworzenie struktury bazy danych
+-- Creating database structure
 
--- Tworzenie tabel WOJ (województwa)
+-- Creating WOJ (voivodeships) table
 CREATE TABLE dbo.WOJ (
     kod_woj     nchar(4)        NOT NULL CONSTRAINT PK_WOJ PRIMARY KEY,
     nazwa       nvarchar(40)    NOT NULL
 );
 GO
 
--- Tworzenie tabel MIASTA
+-- Creating MIASTA (cities) table
 CREATE TABLE dbo.MIASTA (
     kod_woj     nchar(4)        NOT NULL,
     nazwa       nvarchar(40)    NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE dbo.MIASTA (
 );
 GO
 
--- Tworzenie tabel OSOBY
+-- Creating OSOBY (persons) table
 CREATE TABLE dbo.OSOBY (
     id_miasta   INT             NOT NULL,
     imie        nvarchar(40)    NOT NULL,
@@ -44,7 +44,7 @@ CREATE TABLE dbo.OSOBY (
 );
 GO
 
--- Tworzenie tabel FIRMY
+-- Creating FIRMY (companies) table
 CREATE TABLE dbo.FIRMY (
     nazwa_skr   nchar(5)        NOT NULL CONSTRAINT PK_FIRMY PRIMARY KEY,
     id_miasta   INT             NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE dbo.FIRMY (
 );
 GO
 
--- Tworzenie tabel ETATY (etat)
+-- Creating ETATY (positions) table
 CREATE TABLE dbo.ETATY (
     id_osoby    int             NOT NULL,
     id_firmy    nchar(5)        NOT NULL,
@@ -66,16 +66,16 @@ CREATE TABLE dbo.ETATY (
 );
 GO
 
--- Wstawianie danych do tabel
+-- Inserting data into tables
 
--- Wstawianie danych do tabeli WOJ (województwa)
+-- Inserting data into WOJ (voivodeships) table
 INSERT INTO WOJ (kod_woj, nazwa) VALUES 
     ('MAZ', 'Mazowieckie'),
     ('WLK', 'Wielkopolskie'),
     ('POM', 'Pomorskie');
 GO
 
--- Deklaracja zmiennych do przechowywania ID dla łatwiejszego zarządzania referencjami między tabelami
+-- Declaring variables to store IDs for easier management of references between tables
 DECLARE @id_wes int
 	,	@id_wwa int
 	,	@id_rdm int
@@ -97,10 +97,10 @@ DECLARE @id_wes int
 	,	@id_tb	int
 ;
 
--- Wprowadzanie danych do tabeli MIASTA
--- Dla każdego miasta podajemy przynależność do województwa (kod_woj) oraz jego nazwę. 
--- Wykorzystanie SCOPE_IDENTITY() pozwala na zapisanie ID nowo dodanego miasta do zmiennej,
--- co ułatwia późniejsze tworzenie relacji z innymi encjami, takimi jak osoby czy firmy.
+-- Inserting data into MIASTA (cities) table
+-- For each city, we provide its voivodeship code (kod_woj) and name. 
+-- Using SCOPE_IDENTITY() allows us to save the ID of the newly added city to a variable,
+-- facilitating the creation of relationships with other entities, such as persons or companies.
 INSERT INTO MIASTA (kod_woj, nazwa) VALUES ('MAZ', 'Wesoła');
 SET @id_wes = SCOPE_IDENTITY();
 
@@ -125,9 +125,9 @@ SET @id_lsz = SCOPE_IDENTITY();
 INSERT INTO MIASTA (kod_woj, nazwa) VALUES ('WLK', 'Gniezno');
 SET @id_gzn = SCOPE_IDENTITY();
 
--- Wprowadzanie danych do tabeli OSOBY
--- Dla każdej osoby podajemy imię, nazwisko, ID miasta (za pomocą wcześniej zdefiniowanych zmiennych) oraz adres. 
--- Następnie, za pomocą SCOPE_IDENTITY(), przechowujemy ID nowo utworzonej osoby dla ewentualnego wykorzystania w przyszłości (np. przy przypisywaniu etatów).
+-- Inserting data into OSOBY (persons) table
+-- For each person, we provide their name, surname, city ID (using previously defined variables), and address. 
+-- Then, using SCOPE_IDENTITY(), we store the ID of the newly created person for potential future use (e.g., when assigning positions).
 INSERT INTO OSOBY (imie, nazwisko, id_miasta, adres) VALUES ('Adam', 'Nowak', @id_wes, 'Mostowa 5');
 SET @id_an = SCOPE_IDENTITY();
 
@@ -162,9 +162,9 @@ INSERT INTO OSOBY (imie, nazwisko, id_miasta, adres) VALUES ('Stanisław', 'Woku
 INSERT INTO OSOBY (imie, nazwisko, id_miasta, adres) VALUES ('Izabela', 'Łęcka', @id_jar, 'Dobra 33');
 
 
--- Wprowadzanie danych do tabeli FIRMY
--- Każdy rekord zawiera skróconą nazwę firmy (klucz główny), ID miasta (powiązane z tabelą MIASTA),
--- pełną nazwę firmy, kod pocztowy oraz ulicę siedziby firmy.
+-- Inserting data into FIRMY (companies) table
+-- Each record includes the company's abbreviation (primary key), city ID (linked to the MIASTA table),
+-- full company name, postal code, and street address.
 
 INSERT INTO FIRMY (nazwa_skr, id_miasta, nazwa, kod_pocztowy, ulica) 
 VALUES 
@@ -174,17 +174,17 @@ VALUES
     ('VP', @id_pzn, 'Volskwagen', '62-455', 'Samochodowa'),
     ('KP', @id_pzn, 'Kompania Piwowarska', '66-325', 'Piwna');
 
--- Test integralności kluczy obcych
--- Próba dodania firmy do nieistniejącego miasta (zakomentowane, by uniknąć błędów)
---INSERT INTO FIRMY (nazwa_skr, id_miasta, nazwa, kod_pocztowy, ulica) VALUES ('BP', @id_niema, 'BP', '00-000', 'Nieistniejąca');
+-- Foreign key integrity test
+-- Attempting to add a company to a non-existent city (commented out to avoid errors)
+--INSERT INTO FIRMY (nazwa_skr, id_miasta, nazwa, kod_pocztowy, ulica) VALUES ('BP', @id_niema, 'BP', '00-000', 'Nonexistent');
 /*
 Msg 137, Level 15, State 2, Line 108
 Must declare the scalar variable "@id_niema".
 */
 
--- Wprowadzanie danych do tabeli ETATY
--- Każdy rekord reprezentuje etat przypisany osobie (id_osoby) w konkretnej firmie (id_firmy).
--- Zawiera informacje o stanowisku, pensji, dacie rozpoczęcia pracy (od) oraz opcjonalnie dacie zakończenia (do).
+-- Inserting data into ETATY (positions) table
+-- Each record represents a position assigned to a person (id_osoby) in a specific company (id_firmy).
+-- It includes information about the position, salary, start date (od), and optionally, the end date (do).
 
 INSERT INTO ETATY (id_osoby, id_firmy, stanowisko, pensja, od, do) 
 VALUES 
@@ -247,7 +247,6 @@ SELECT * FROM OSOBY
 (12 row(s) affected)
 */
 
-/* to samo dodać odnośnie FIRMY i ETATY */
 SELECT * FROM FIRMY
 /*nazwa_skr id_miasta   nazwa                                                        kod_pocztowy ulica
 --------- ----------- ------------------------------------------------------------ ------------ ----------------------------------------

@@ -1,19 +1,18 @@
 /*
-Bazy Danych - Zarządzanie Zasobami Ludzkimi - część 4
+Database Management - Human Resources Management - Part 4
 
-Opis projektu:
-Procedura "szukaj_fi" została zaprojektowana w celu elastycznego 
-wyszukiwania firm w bazie danych na podstawie różnych kryteriów, 
-takich jak skrócona nazwa firmy, pełna nazwa oraz miasto, w którym 
-firma się znajduje. Umożliwia to szczegółowe filtrowanie danych 
-i uzyskanie precyzyjnych informacji związanych z firmami i ich 
-lokalizacją. 
+Project Description:
+The procedure "szukaj_fi" was designed to flexibly 
+search for companies in the database based on various criteria, 
+such as the company's abbreviated name, full name, and the city 
+in which the company is located. This allows for detailed filtering of data 
+and obtaining precise information related to companies and their 
+location. 
 
-Autor: Sonia Bogdańska
-
+Author: Sonia Bogdańska
 */
 
--- Deklaracja procedury "szukaj_fi"
+-- Declaration of the "szukaj_fi" procedure
 
 CREATE PROCEDURE dbo.szukaj_fi
 ( 
